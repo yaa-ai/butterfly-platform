@@ -75,10 +75,33 @@ export default function DashboardScreen() {
           onPress: async () => {
             setIsLoading(true);
             try {
-              await signOut();
-              router.replace('/login');
+              console.log('Starting sign out process...');
+              
+              const result = await signOut();
+              console.log('Sign out result:', result);
+              
+              if (result.success) {
+                console.log('Sign out successful, redirecting to login...');
+                // Clear any stored data
+                try {
+                  // Clear any local storage if needed
+                  if (typeof window !== 'undefined' && window.localStorage) {
+                    window.localStorage.clear();
+                  }
+                } catch (storageError) {
+                  console.log('Error clearing storage:', storageError);
+                }
+                
+                // Navigate to login
+                await router.replace('/login');
+                console.log('Navigation to login completed');
+              } else {
+                console.error('Sign out failed:', result.error);
+                Alert.alert('Error', `Failed to sign out: ${result.error}`);
+              }
             } catch (error) {
-              Alert.alert('Error', 'Failed to sign out');
+              console.error('Sign out error:', error);
+              Alert.alert('Error', `Failed to sign out: ${error instanceof Error ? error.message : 'Unknown error'}`);
             } finally {
               setIsLoading(false);
             }
@@ -149,7 +172,8 @@ export default function DashboardScreen() {
               <TouchableOpacity 
                 style={[styles.iconButton, isLoading && styles.disabledButton]} 
                 onPress={handleSignOut}
-                disabled={isLoading}>
+                disabled={isLoading}
+                testID="logout-button">
                 <LogOut size={24} color="#FFFFFF" />
               </TouchableOpacity>
             </View>

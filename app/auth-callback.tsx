@@ -58,8 +58,13 @@ export default function AuthCallbackAlt() {
         }
 
         if (data.session) {
-          // Successfully authenticated, redirect to dashboard
-          console.log('Authentication successful, redirecting to dashboard');
+          // Successfully authenticated, ensure user profile exists
+          console.log('Authentication successful, ensuring user profile exists...');
+          setStatus('Setting up your profile...');
+          
+          await ensureUserProfile(data.session.user);
+          
+          console.log('Profile setup complete, redirecting to dashboard');
           setStatus('Welcome! Redirecting to dashboard...');
           setTimeout(async () => {
             try {
@@ -86,7 +91,12 @@ export default function AuthCallbackAlt() {
         // Check if user is already authenticated
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          console.log('User already authenticated, redirecting to dashboard');
+          console.log('User already authenticated, ensuring profile exists...');
+          setStatus('Setting up your profile...');
+          
+          await ensureUserProfile(session.user);
+          
+          console.log('Profile setup complete, redirecting to dashboard');
           setStatus('Already logged in! Redirecting to dashboard...');
           setTimeout(async () => {
             try {
@@ -118,6 +128,70 @@ export default function AuthCallbackAlt() {
           console.error('Navigation error:', navError);
         }
       }, 2000);
+    }
+  };
+
+  // Function to ensure user profile and settings exist
+  const ensureUserProfile = async (user: any) => {
+    try {
+      console.log('Ensuring user profile exists for:', user.id);
+      
+      // Check if user profile exists
+      const { data: profile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+      
+      if (profileError && profileError.code === 'PGRST116') {
+        // Profile doesn't exist, create it
+        console.log('Creating user profile...');
+        const { error: insertProfileError } = await supabase
+          .from('user_profiles')
+          .insert({
+            id: user.id,
+            full_name: user.user_metadata?.full_name || user.user_metadata?.name || 'User',
+            avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture,
+          });
+        
+        if (insertProfileError) {
+          console.error('Error creating user profile:', insertProfileError);
+        } else {
+          console.log('User profile created successfully');
+        }
+      } else if (profileError) {
+        console.error('Error checking user profile:', profileError);
+      } else {
+        console.log('User profile already exists');
+      }
+      
+      // Check if user settings exist
+      const { data: settings, error: settingsError } = await supabase
+        .from('user_settings')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+      
+      if (settingsError && settingsError.code === 'PGRST116') {
+        // Settings don't exist, create them
+        console.log('Creating user settings...');
+        const { error: insertSettingsError } = await supabase
+          .from('user_settings')
+          .insert({ id: user.id });
+        
+        if (insertSettingsError) {
+          console.error('Error creating user settings:', insertSettingsError);
+        } else {
+          console.log('User settings created successfully');
+        }
+      } else if (settingsError) {
+        console.error('Error checking user settings:', settingsError);
+      } else {
+        console.log('User settings already exist');
+      }
+      
+    } catch (error) {
+      console.error('Error ensuring user profile:', error);
     }
   };
 

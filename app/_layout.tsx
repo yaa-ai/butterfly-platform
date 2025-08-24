@@ -27,7 +27,6 @@ export default function RootLayout() {
           <Stack.Screen name="register" options={{ headerShown: false }} />
           <Stack.Screen name="settings" options={{ headerShown: false }} />
           <Stack.Screen name="debug" options={{ headerShown: false }} />
-          <Stack.Screen name="auth" options={{ headerShown: false }} />
           <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
