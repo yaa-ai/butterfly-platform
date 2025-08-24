@@ -1,16 +1,45 @@
+import GoogleSignInButton from '@/components/GoogleSignInButton';
+import { useAuth } from '@/contexts/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { ArrowRight, Sparkles, Target, Zap } from 'lucide-react-native';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
+  const { signInWithGoogle } = useAuth();
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
   const handleGetStarted = () => {
     router.push('/register');
   };
 
   const handleLearnMore = () => {
     router.push('/(tabs)/explore');
+  };
+
+  const handleGoogleSignIn = async () => {
+    console.log('handleGoogleSignIn called');
+    setIsGoogleLoading(true);
+    try {
+      console.log('Calling Supabase Google Sign-In...');
+      const result = await signInWithGoogle();
+      console.log('Google Sign-In result:', result);
+      
+      if (result.success) {
+        Alert.alert('Success', 'Welcome to Butterfly Platform!', [
+          { text: 'OK', onPress: () => router.replace('/(tabs)/dashboard') },
+        ]);
+      } else {
+        Alert.alert('Error', result.error || 'Google Sign-In failed');
+      }
+    } catch (error) {
+      console.error('Error in handleGoogleSignIn:', error);
+      Alert.alert('Error', 'An unexpected error occurred during Google Sign-In');
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   return (
@@ -102,6 +131,16 @@ export default function HomeScreen() {
             <TouchableOpacity style={styles.secondaryButton} onPress={handleLearnMore}>
               <Text style={styles.secondaryButtonText}>Learn More</Text>
             </TouchableOpacity>
+          </View>
+
+          {/* Google Sign-In Option */}
+          <View style={styles.googleSignInContainer}>
+            <Text style={styles.googleSignInText}>Quick Start</Text>
+            <GoogleSignInButton
+              onPress={handleGoogleSignIn}
+              loading={isGoogleLoading}
+              title="Sign in with Google"
+            />
           </View>
         </View>
       </ScrollView>
@@ -287,5 +326,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#8B5CF6',
+  },
+  googleSignInContainer: {
+    marginTop: 24,
+    alignItems: 'center',
+  },
+  googleSignInText: {
+    fontSize: 14,
+    color: '#64748B',
+    marginBottom: 12,
+    fontWeight: '500',
   },
 });

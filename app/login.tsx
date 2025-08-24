@@ -1,3 +1,5 @@
+import GoogleSignInButton from '@/components/GoogleSignInButton';
+import { useAuth } from '@/contexts/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { ArrowLeft, Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
@@ -16,10 +18,31 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
+  const { signInWithGoogle, signInWithEmail } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    try {
+      const result = await signInWithGoogle();
+      
+      if (result.success) {
+        Alert.alert('Success', 'Welcome back to Butterfly Platform!', [
+          { text: 'OK', onPress: () => router.replace('/(tabs)/dashboard') },
+        ]);
+      } else {
+        Alert.alert('Error', result.error || 'Google Sign-In failed');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred during Google Sign-In');
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -28,12 +51,21 @@ export default function LoginScreen() {
     }
 
     setIsLoading(true);
-    // Simulate login process
-    setTimeout(() => {
+    try {
+      const result = await signInWithEmail(email, password);
+
+      if (result.success) {
+        Alert.alert('Success', 'Welcome back!', [
+          { text: 'OK', onPress: () => router.replace('/(tabs)') },
+        ]);
+      } else {
+        Alert.alert('Error', result.error || 'Login failed');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred during login');
+    } finally {
       setIsLoading(false);
-      // Navigate to main app
-      router.replace('/(tabs)');
-    }, 1500);
+    }
   };
 
   const handleBack = () => {
@@ -119,6 +151,21 @@ export default function LoginScreen() {
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </Text>
             </TouchableOpacity>
+
+            {/* Divider */}
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* Google Sign-In Button */}
+            <GoogleSignInButton
+              onPress={handleGoogleSignIn}
+              loading={isGoogleLoading}
+              disabled={isLoading}
+              title="Continue with Google"
+            />
 
             {/* Sign Up Link */}
             <View style={styles.signUpContainer}>
@@ -273,5 +320,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#0077B5',
     fontWeight: '600',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E2E8F0',
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    fontSize: 14,
+    color: '#64748B',
+    fontWeight: '500',
   },
 });

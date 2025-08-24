@@ -1,3 +1,5 @@
+import GoogleSignInButton from '@/components/GoogleSignInButton';
+import { useAuth } from '@/contexts/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from 'lucide-react-native';
@@ -16,6 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RegisterScreen() {
+  const { signInWithGoogle, signUpWithEmail } = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,6 +26,26 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    try {
+      const result = await signInWithGoogle();
+      
+      if (result.success) {
+        Alert.alert('Success', 'Welcome to Butterfly Platform!', [
+          { text: 'OK', onPress: () => router.replace('/(tabs)/dashboard') },
+        ]);
+      } else {
+        Alert.alert('Error', result.error || 'Google Sign-In failed');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred during Google Sign-In');
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
 
   const handleRegister = async () => {
     if (!fullName || !email || !password || !confirmPassword) {
@@ -41,13 +64,23 @@ export default function RegisterScreen() {
     }
 
     setIsLoading(true);
-    // Simulate registration process
-    setTimeout(() => {
+    try {
+      const result = await signUpWithEmail(email, password, {
+        full_name: fullName,
+      });
+
+      if (result.success) {
+        Alert.alert('Success', 'Account created successfully!', [
+          { text: 'OK', onPress: () => router.replace('/(tabs)') },
+        ]);
+      } else {
+        Alert.alert('Error', result.error || 'Registration failed');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred during registration');
+    } finally {
       setIsLoading(false);
-      Alert.alert('Success', 'Account created successfully!', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)') },
-      ]);
-    }, 1500);
+    }
   };
 
   const handleBack = () => {
@@ -170,6 +203,21 @@ export default function RegisterScreen() {
                 {isLoading ? 'Creating Account...' : 'Create Account'}
               </Text>
             </TouchableOpacity>
+
+            {/* Divider */}
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* Google Sign-In Button */}
+            <GoogleSignInButton
+              onPress={handleGoogleSignIn}
+              loading={isGoogleLoading}
+              disabled={isLoading}
+              title="Continue with Google"
+            />
 
             {/* Sign In Link */}
             <View style={styles.signInContainer}>
@@ -326,5 +374,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#8B5CF6',
     fontWeight: '600',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E2E8F0',
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    fontSize: 14,
+    color: '#64748B',
+    fontWeight: '500',
   },
 });
