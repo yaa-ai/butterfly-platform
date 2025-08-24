@@ -13,8 +13,8 @@ export const signInWithGoogle = async () => {
     
     // Use environment variable for redirect URL, fallback to dynamic detection
     const redirectUrl = window.location.hostname === 'localhost' 
-      ? `${window.location.origin}/auth/callback`
-      : (process.env.EXPO_PUBLIC_AUTH_REDIRECT_URL || 'https://butterfly-platform--p421kkcet9.expo.app/auth/callback');
+      ? `${window.location.origin}/auth-callback`
+      : (process.env.EXPO_PUBLIC_AUTH_REDIRECT_URL || 'https://butterfly-platform--p421kkcet9.expo.app/auth-callback');
     
     console.log('Calculated redirect URL:', redirectUrl);
 

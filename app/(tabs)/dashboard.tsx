@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function DashboardScreen() {
   const { user, signOut } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   // Helper functions to extract user information
   const getUserFirstName = () => {
@@ -32,9 +33,16 @@ export default function DashboardScreen() {
   };
 
   const getUserAvatar = () => {
-    return user?.user_metadata?.avatar_url || 
-           user?.user_metadata?.picture || 
-           null;
+    const avatarUrl = user?.user_metadata?.avatar_url || 
+                     user?.user_metadata?.picture || 
+                     null;
+    
+    // Add CORS-friendly headers for Google profile images
+    if (avatarUrl && avatarUrl.includes('googleusercontent.com')) {
+      return avatarUrl;
+    }
+    
+    return avatarUrl;
   };
 
   const getUserInitial = () => {
@@ -96,11 +104,20 @@ export default function DashboardScreen() {
           <View style={styles.headerContent}>
             <View style={styles.userInfo}>
               <View style={styles.avatarContainer}>
-                {getUserAvatar() ? (
+                {getUserAvatar() && !imageError ? (
                   <Image 
-                    source={{ uri: getUserAvatar() }} 
+                    source={{ 
+                      uri: getUserAvatar(),
+                      headers: {
+                        'Accept': 'image/webp,image/*,*/*;q=0.8',
+                      },
+                    }} 
                     style={styles.avatarImage}
                     resizeMode="cover"
+                    onError={() => {
+                      console.log('Failed to load profile image, falling back to initial');
+                      setImageError(true);
+                    }}
                   />
                 ) : (
                   <Text style={styles.avatarText}>

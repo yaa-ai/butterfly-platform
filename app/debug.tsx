@@ -30,10 +30,10 @@ export default function DebugScreen() {
       calculatedUrl: (() => {
         if (typeof window === 'undefined') return 'N/A';
         return window.location.hostname === 'localhost' 
-          ? `${window.location.origin}/auth/callback`
-          : (process.env.EXPO_PUBLIC_AUTH_REDIRECT_URL || 'https://butterfly-platform--b2qbrpozgk.expo.app/auth/callback');
+          ? `${window.location.origin}/auth-callback`
+          : (process.env.EXPO_PUBLIC_AUTH_REDIRECT_URL || 'https://butterfly-platform--p421kkcet9.expo.app/auth-callback');
       })(),
-      expectedProductionUrl: 'https://butterfly-platform--b2qbrpozgk.expo.app/auth/callback',
+      expectedProductionUrl: 'https://butterfly-platform--p421kkcet9.expo.app/auth-callback',
     },
     
     // Build Information
