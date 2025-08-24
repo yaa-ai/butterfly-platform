@@ -34,6 +34,7 @@ Create a `.env` file in your project root:
 # Supabase Configuration
 EXPO_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+# Required for production OAuth redirects (only used when not on localhost)
 EXPO_PUBLIC_AUTH_REDIRECT_URL=https://butterfly-platform--p421kkcet9.expo.app/auth/callback
 ```
 
