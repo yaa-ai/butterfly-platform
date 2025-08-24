@@ -34,6 +34,7 @@ Create a `.env` file in your project root:
 # Supabase Configuration
 EXPO_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+EXPO_PUBLIC_AUTH_REDIRECT_URL=https://butterfly-platform--p421kkcet9.expo.app/auth/callback
 ```
 
 ## Step 4: Enable Google OAuth
@@ -52,6 +53,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
      - Your Supabase project URL (e.g., `https://your-project-id.supabase.co`)
    - Add authorized redirect URIs:
      - `https://your-project-id.supabase.co/auth/v1/callback`
+     - `https://butterfly-platform--p421kkcet9.expo.app/auth/callback` (for production)
    - Copy the **Client ID** and **Client Secret**
 
 4. Back in Supabase, enter your Google credentials:

@@ -4,10 +4,16 @@ import { Session, User } from '@supabase/supabase-js';
 // Sign in with Google
 export const signInWithGoogle = async () => {
   try {
+    // Use environment variable for redirect URL, fallback to dynamic detection
+    const redirectUrl = process.env.EXPO_PUBLIC_AUTH_REDIRECT_URL || 
+                       (window.location.hostname === 'localhost' 
+                         ? `${window.location.origin}/auth/callback`
+                         : 'https://butterfly-platform--p421kkcet9.expo.app/auth/callback');
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: redirectUrl,
       },
     });
 
