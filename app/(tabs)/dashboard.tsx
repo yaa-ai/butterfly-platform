@@ -3,12 +3,44 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { LogOut, Settings, Sparkles, User } from 'lucide-react-native';
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function DashboardScreen() {
   const { user, signOut } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Helper functions to extract user information
+  const getUserFirstName = () => {
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name.split(' ')[0];
+    }
+    if (user?.user_metadata?.name) {
+      return user.user_metadata.name.split(' ')[0];
+    }
+    if (user?.email) {
+      return user.email.split('@')[0];
+    }
+    return 'User';
+  };
+
+  const getUserFullName = () => {
+    return user?.user_metadata?.full_name || 
+           user?.user_metadata?.name || 
+           user?.email || 
+           'User';
+  };
+
+  const getUserAvatar = () => {
+    return user?.user_metadata?.avatar_url || 
+           user?.user_metadata?.picture || 
+           null;
+  };
+
+  const getUserInitial = () => {
+    const fullName = getUserFullName();
+    return fullName.charAt(0).toUpperCase();
+  };
 
   const wittyQuotes = [
     "Social media: where you can be anyone you want, except yourself.",
@@ -64,15 +96,28 @@ export default function DashboardScreen() {
           <View style={styles.headerContent}>
             <View style={styles.userInfo}>
               <View style={styles.avatarContainer}>
-                <Text style={styles.avatarText}>
-                  {user?.user_metadata?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                </Text>
+                {getUserAvatar() ? (
+                  <Image 
+                    source={{ uri: getUserAvatar() }} 
+                    style={styles.avatarImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Text style={styles.avatarText}>
+                    {getUserInitial()}
+                  </Text>
+                )}
               </View>
               <View style={styles.userDetails}>
-                <Text style={styles.welcomeText}>Welcome back!</Text>
+                <Text style={styles.welcomeText}>Hello, {getUserFirstName()}! 👋</Text>
                 <Text style={styles.userName}>
-                  {user?.user_metadata?.full_name || user?.email || 'User'}
+                  {getUserFullName()}
                 </Text>
+                {user?.email && (
+                  <Text style={styles.userEmail}>
+                    {user.email}
+                  </Text>
+                )}
               </View>
             </View>
             <View style={styles.headerActions}>
@@ -162,6 +207,27 @@ export default function DashboardScreen() {
               </Text>
             </View>
           </View>
+
+          {/* Debug Section - Only show if user is authenticated */}
+          {user && (
+            <View style={styles.debugContainer}>
+              <Text style={styles.sectionTitle}>Authentication Status ✅</Text>
+              <View style={styles.debugInfo}>
+                <Text style={styles.debugText}>
+                  <Text style={styles.debugLabel}>Provider:</Text> {user.app_metadata?.provider || 'Unknown'}
+                </Text>
+                <Text style={styles.debugText}>
+                  <Text style={styles.debugLabel}>User ID:</Text> {user.id}
+                </Text>
+                <Text style={styles.debugText}>
+                  <Text style={styles.debugLabel}>Email Verified:</Text> {user.email_confirmed_at ? 'Yes' : 'No'}
+                </Text>
+                <Text style={styles.debugText}>
+                  <Text style={styles.debugLabel}>Created:</Text> {new Date(user.created_at).toLocaleDateString()}
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -204,6 +270,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
   },
+  avatarImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
   userDetails: {
     flex: 1,
   },
@@ -216,6 +287,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  userEmail: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.6)',
   },
   headerActions: {
     flexDirection: 'row',
@@ -369,5 +445,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#94A3B8',
     textAlign: 'center',
+  },
+  debugContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  debugInfo: {
+    gap: 8,
+  },
+  debugText: {
+    fontSize: 14,
+    color: '#64748B',
+    lineHeight: 20,
+  },
+  debugLabel: {
+    fontWeight: '600',
+    color: '#1E293B',
   },
 });

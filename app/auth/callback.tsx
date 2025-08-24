@@ -1,12 +1,24 @@
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 export default function AuthCallback() {
+  const [isReady, setIsReady] = useState(false);
+
   useEffect(() => {
-    handleAuthCallback();
+    // Add a small delay to ensure router is ready
+    const timer = setTimeout(() => {
+      setIsReady(true);
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!isReady) return;
+    handleAuthCallback();
+  }, [isReady]);
 
   const handleAuthCallback = async () => {
     try {
@@ -27,34 +39,38 @@ export default function AuthCallback() {
 
         if (error) {
           console.error('Error setting session:', error);
-          router.replace('/login');
+          await router.replace('/login');
           return;
         }
 
         if (data.session) {
           // Successfully authenticated, redirect to dashboard
           console.log('Authentication successful, redirecting to dashboard');
-          router.replace('/(tabs)/dashboard');
+          await router.replace('/(tabs)/dashboard');
         } else {
           // No session, redirect to login
           console.log('No session found, redirecting to login');
-          router.replace('/login');
+          await router.replace('/login');
         }
       } else {
         // Check if user is already authenticated
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           console.log('User already authenticated, redirecting to dashboard');
-          router.replace('/(tabs)/dashboard');
+          await router.replace('/(tabs)/dashboard');
         } else {
           // No tokens found, redirect to login
           console.log('No tokens found, redirecting to login');
-          router.replace('/login');
+          await router.replace('/login');
         }
       }
     } catch (error) {
       console.error('Auth callback error:', error);
-      router.replace('/login');
+      try {
+        await router.replace('/login');
+      } catch (navError) {
+        console.error('Navigation error:', navError);
+      }
     }
   };
 
