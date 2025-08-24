@@ -7,14 +7,26 @@ export default function IndexScreen() {
   const { user, session } = useAuth();
 
   useEffect(() => {
-    // Check if user is authenticated
-    if (user && session) {
-      // User is logged in, redirect to dashboard
-      router.replace('/(tabs)/dashboard');
-    } else {
-      // User is not logged in, redirect to login
-      router.replace('/login');
-    }
+    const checkAuthAndRedirect = async () => {
+      try {
+        // Check if user is authenticated
+        if (user && session) {
+          console.log('User authenticated, redirecting to dashboard');
+          // User is logged in, redirect to dashboard
+          router.replace('/(tabs)/dashboard');
+        } else {
+          console.log('User not authenticated, redirecting to login');
+          // User is not logged in, redirect to login
+          router.replace('/login');
+        }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        // On error, redirect to login
+        router.replace('/login');
+      }
+    };
+
+    checkAuthAndRedirect();
   }, [user, session]);
 
   return (

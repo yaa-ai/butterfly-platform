@@ -80,6 +80,11 @@ export default function DashboardScreen() {
                 <Settings size={24} color="#FFFFFF" />
               </TouchableOpacity>
               <TouchableOpacity 
+                style={styles.iconButton} 
+                onPress={() => router.push('/debug')}>
+                <Text style={{ color: '#FFFFFF', fontSize: 16 }}>🐛</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
                 style={[styles.iconButton, isLoading && styles.disabledButton]} 
                 onPress={handleSignOut}
                 disabled={isLoading}>

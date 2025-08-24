@@ -4,17 +4,42 @@ import { Session, User } from '@supabase/supabase-js';
 // Sign in with Google
 export const signInWithGoogle = async () => {
   try {
+    // Debug logging
+    console.log('=== Google Sign-In Debug ===');
+    console.log('Hostname:', window.location.hostname);
+    console.log('Origin:', window.location.origin);
+    console.log('EXPO_PUBLIC_AUTH_REDIRECT_URL:', process.env.EXPO_PUBLIC_AUTH_REDIRECT_URL);
+    console.log('Is localhost:', window.location.hostname === 'localhost');
+    
     // Use environment variable for redirect URL, fallback to dynamic detection
     const redirectUrl = window.location.hostname === 'localhost' 
       ? `${window.location.origin}/auth/callback`
       : (process.env.EXPO_PUBLIC_AUTH_REDIRECT_URL || 'https://butterfly-platform--p421kkcet9.expo.app/auth/callback');
+    
+    console.log('Calculated redirect URL:', redirectUrl);
+
+    console.log('Calling Supabase OAuth with redirect URL:', redirectUrl);
+    
+    // Try to force the redirect URL by using multiple approaches
+    const oauthOptions: any = {
+      redirectTo: redirectUrl,
+    };
+
+    // Add query parameters to force the redirect URL
+    if (redirectUrl) {
+      oauthOptions.queryParams = {
+        redirect_uri: redirectUrl,
+      };
+    }
+
+    console.log('OAuth options:', oauthOptions);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: redirectUrl,
-      },
+      options: oauthOptions,
     });
+    
+    console.log('Supabase OAuth response:', { data, error });
 
     if (error) {
       console.error('Google Sign-In error:', error);
@@ -22,6 +47,26 @@ export const signInWithGoogle = async () => {
         success: false,
         error: error.message,
       };
+    }
+
+    // Check if we got a URL back and log it for debugging
+    if (data?.url) {
+      console.log('Generated OAuth URL:', data.url);
+      
+      // Parse the URL to see what redirect_uri is being used
+      try {
+        const url = new URL(data.url);
+        const redirectUri = url.searchParams.get('redirect_uri');
+        console.log('Actual redirect_uri in OAuth URL:', redirectUri);
+        
+        if (redirectUri !== redirectUrl) {
+          console.warn('⚠️ Redirect URL mismatch!');
+          console.warn('Expected:', redirectUrl);
+          console.warn('Actual:', redirectUri);
+        }
+      } catch (parseError) {
+        console.error('Error parsing OAuth URL:', parseError);
+      }
     }
 
     return {

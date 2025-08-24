@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { router } from 'expo-router';
+import { useEffect } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 export default function AuthCallback() {
   useEffect(() => {
@@ -33,14 +33,24 @@ export default function AuthCallback() {
 
         if (data.session) {
           // Successfully authenticated, redirect to dashboard
+          console.log('Authentication successful, redirecting to dashboard');
           router.replace('/(tabs)/dashboard');
         } else {
           // No session, redirect to login
+          console.log('No session found, redirecting to login');
           router.replace('/login');
         }
       } else {
-        // No tokens found, redirect to login
-        router.replace('/login');
+        // Check if user is already authenticated
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          console.log('User already authenticated, redirecting to dashboard');
+          router.replace('/(tabs)/dashboard');
+        } else {
+          // No tokens found, redirect to login
+          console.log('No tokens found, redirecting to login');
+          router.replace('/login');
+        }
       }
     } catch (error) {
       console.error('Auth callback error:', error);

@@ -56,7 +56,7 @@ export default function LoginScreen() {
 
       if (result.success) {
         Alert.alert('Success', 'Welcome back!', [
-          { text: 'OK', onPress: () => router.replace('/(tabs)') },
+          { text: 'OK', onPress: () => router.replace('/(tabs)/dashboard') },
         ]);
       } else {
         Alert.alert('Error', result.error || 'Login failed');

@@ -71,7 +71,7 @@ export default function RegisterScreen() {
 
       if (result.success) {
         Alert.alert('Success', 'Account created successfully!', [
-          { text: 'OK', onPress: () => router.replace('/(tabs)') },
+          { text: 'OK', onPress: () => router.replace('/(tabs)/dashboard') },
         ]);
       } else {
         Alert.alert('Error', result.error || 'Registration failed');
